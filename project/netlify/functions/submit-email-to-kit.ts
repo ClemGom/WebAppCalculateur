@@ -1,3 +1,5 @@
+// netlify/functions/submit-email-to-kit.ts
+
 interface EmailData {
   email: string;
   name?: string;
@@ -37,10 +39,14 @@ export const handler = async (event: any) => {
 
   try {
     const emailData: EmailData = JSON.parse(event.body);
+    console.log('Received emailData:', emailData); // NOUVEAU LOG
 
     // Get environment variables
     const KIT_API_KEY = process.env.KIT_API_KEY;
     const KIT_FORM_ID = process.env.KIT_FORM_ID;
+
+    console.log('KIT_API_KEY (first 5 chars):', KIT_API_KEY ? KIT_API_KEY.substring(0, 5) : 'N/A'); // NOUVEAU LOG (partiel pour sécurité)
+    console.log('KIT_FORM_ID:', KIT_FORM_ID); // NOUVEAU LOG
 
     if (!KIT_API_KEY || !KIT_FORM_ID) {
       console.error('Missing Kit configuration');
@@ -49,9 +55,9 @@ export const handler = async (event: any) => {
         headers: {
           'Access-Control-Allow-Origin': '*',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           error: 'Configuration manquante',
-          success: false 
+          success: false
         }),
       };
     }
@@ -79,6 +85,8 @@ export const handler = async (event: any) => {
     });
 
     const result = await response.json();
+    console.log('ConvertKit API response status:', response.status); // NOUVEAU LOG
+    console.log('ConvertKit API response body:', result); // NOUVEAU LOG
 
     if (response.ok) {
       return {
@@ -86,7 +94,7 @@ export const handler = async (event: any) => {
         headers: {
           'Access-Control-Allow-Origin': '*',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           success: true,
           message: 'Email ajouté avec succès à Kit'
         }),
@@ -98,7 +106,7 @@ export const handler = async (event: any) => {
         headers: {
           'Access-Control-Allow-Origin': '*',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           success: false,
           error: 'Erreur lors de l\'ajout à Kit',
           details: result
@@ -113,7 +121,7 @@ export const handler = async (event: any) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         success: false,
         error: 'Erreur serveur interne'
       }),
